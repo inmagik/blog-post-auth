@@ -1,4 +1,3 @@
-// src/App.js
 import { BrowserRouter as Router, Switch } from 'react-router-dom'
 import Auth, { useAuthActions } from 'use-eazy-auth'
 import { AuthRoute, GuestRoute } from 'use-eazy-auth/routes'
