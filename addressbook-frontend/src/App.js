@@ -1,10 +1,12 @@
+// src/App.js
 import { BrowserRouter as Router, Switch } from 'react-router-dom'
+import Auth, { useAuthActions } from 'use-eazy-auth'
+import { AuthRoute, GuestRoute } from 'use-eazy-auth/routes'
+import { ConfigureRj } from 'react-rocketjump'
 import { map } from 'rxjs/operators'
 import { ajax } from 'rxjs/ajax'
-import Auth from 'use-eazy-auth'
-import { AuthRoute, GuestRoute } from 'use-eazy-auth/routes'
-import Home from './pages/Home'
 import Login from './pages/Login'
+import AddressBook from './pages/AddressBook'
 
 const login = (credentials = {}) =>
   ajax({
@@ -15,9 +17,9 @@ const login = (credentials = {}) =>
     },
     body: credentials,
   }).pipe(
-    map((o) => ({
-      accessToken: o.response.access,
-      refreshToken: o.response.refresh,
+    map(({ response }) => ({
+      accessToken: response.access,
+      refreshToken: response.refresh,
     }))
   )
 
@@ -26,21 +28,45 @@ const me = (token) =>
     Authorization: `Bearer ${token}`,
   })
 
-function App() {
+const refresh = (refreshToken) =>
+  ajax({
+    url: '/api/token/refresh/',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: { refresh: refreshToken },
+  }).pipe(
+    map(({ response }) => ({
+      refreshToken,
+      accessToken: response.access,
+    }))
+  )
+
+function ConfigureAuth({ children }) {
+  const { callAuthApiObservable } = useAuthActions()
   return (
-    <Auth loginCall={login} meCall={me}>
-      <Router>
-        <Switch>
-          <GuestRoute path="/login">
-            <Login />
-          </GuestRoute>
-          <AuthRoute path="/" exact>
-            <Home />
-          </AuthRoute>
-        </Switch>
-      </Router>
-    </Auth>
+    <ConfigureRj effectCaller={callAuthApiObservable}>
+      {children}
+    </ConfigureRj>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <Auth loginCall={login} meCall={me} refreshTokenCall={refresh}>
+      <ConfigureAuth>
+        <Router>
+          <Switch>
+            <GuestRoute path="/login" redirectTo='/'>
+              <Login />
+            </GuestRoute>
+            <AuthRoute path="/" exact redirectTo='/login'>
+              <AddressBook />
+            </AuthRoute>
+          </Switch>
+        </Router>
+      </ConfigureAuth>
+    </Auth>
+  )
+}

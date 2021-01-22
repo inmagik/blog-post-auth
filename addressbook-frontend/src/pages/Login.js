@@ -13,6 +13,7 @@ export default function Login() {
 
   return (
     <form
+      className="row mt-5 p-2"
       onSubmit={(e) => {
         e.preventDefault()
         if (username !== '' && password !== '') {
@@ -20,9 +21,10 @@ export default function Login() {
         }
       }}
     >
-      <div>
-        <div>
-          <h1>Login</h1>
+      <div className="col-md-4 offset-md-4">
+        <div className='mb-3'>
+          <h1>📒 Address Boook App</h1>
+          <h2 className='mt-4'>Please Log In</h2>
         </div>
         <div className="form-group">
           <input
@@ -48,7 +50,7 @@ export default function Login() {
             }}
           />
         </div>
-        <button className="btn btn-primary" disabled={loginLoading}>
+        <button className="btn btn-light" disabled={loginLoading}>
           {!loginLoading ? 'Login!' : 'Logged in...'}
         </button>
         {loginError && (
